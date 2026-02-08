@@ -23,13 +23,13 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { url, title } = req.query;
+        const { url, title, ext } = req.query;
 
         if (!url) {
             return res.status(400).json({ error: 'URL is required' });
         }
 
-        // Fetch video dengan streaming
+        // Fetch file dengan streaming
         const response = await axios({
             method: 'GET',
             url: url,
@@ -39,10 +39,30 @@ module.exports = async (req, res) => {
             }
         });
 
+        // Detect content type and extension
+        const contentType = response.headers['content-type'];
+        let fileExt = ext || 'mp4';
+        let mimeType = contentType || 'video/mp4';
+
+        // Determine file extension based on content type if not provided
+        if (!ext) {
+            if (contentType) {
+                if (contentType.includes('image')) {
+                    fileExt = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg' : 
+                              contentType.includes('png') ? 'png' : 
+                              contentType.includes('webp') ? 'webp' : 'jpg';
+                } else if (contentType.includes('audio')) {
+                    fileExt = contentType.includes('mpeg') ? 'mp3' : 'mp3';
+                } else if (contentType.includes('video')) {
+                    fileExt = 'mp4';
+                }
+            }
+        }
+
         // Set headers untuk download
-        const filename = title ? `${title}.mp4` : 'video.mp4';
+        const filename = title ? `${title}.${fileExt}` : `download.${fileExt}`;
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-        res.setHeader('Content-Type', response.headers['content-type'] || 'video/mp4');
+        res.setHeader('Content-Type', mimeType);
         
         if (response.headers['content-length']) {
             res.setHeader('Content-Length', response.headers['content-length']);
