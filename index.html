@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIO Downloader - Download dari Platform Apapun</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #383838;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 30px 30px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        .container {
+            background: rgba(50, 50, 50, 0.95);
+            border-radius: 24px;
+            padding: 50px 40px;
+            max-width: 650px;
+            width: 100%;
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0;
+            animation: smoothFadeIn 1.2s ease-out forwards;
+        }
+
+        @keyframes smoothFadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 15px;
+            opacity: 0;
+            animation: fadeInElement 1s ease-out 0.3s forwards;
+        }
+
+        @keyframes fadeInElement {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo svg {
+            width: 70px;
+            height: 70px;
+            fill: #ffffff;
+        }
+
+        h1 {
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.2em;
+            font-weight: 700;
+            opacity: 0;
+            animation: fadeInElement 1s ease-out 0.5s forwards;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #b0b0b0;
+            margin-bottom: 40px;
+            font-size: 1.05em;
+            opacity: 0;
+            animation: fadeInElement 1s ease-out 0.7s forwards;
+        }
+
+        .supported-platforms {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 35px;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: fadeInElement 1s ease-out 0.9s forwards;
+        }
+
+        .platform-badge {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+            opacity: 0;
+            animation: fadeInElement 1s ease-out 1.1s forwards;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #e0e0e0;
+            font-weight: 600;
+            font-size: 0.95em;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(30, 30, 30, 0.8);
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            font-size: 1em;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            outline: none;
+        }
+
+        input[type="text"]::placeholder {
+            color: #808080;
+        }
+
+        input[type="text"]:focus {
+            background: rgba(40, 40, 40, 0.9);
+            border-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-container {
+            opacity: 0;
+            animation: fadeInElement 1s ease-out 1.3s forwards;
+        }
+
+        button {
+            width: 100%;
+            padding: 18px;
+            background: #ffffff;
+            color: #2d2d2d;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1em;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            background: #f0f0f0;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 25px;
+            color: #e0e0e0;
+        }
+
+        .loading.active {
+            display: block;
+            animation: fadeInElement 0.5s ease-out forwards;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid #ffffff;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(40, 40, 40, 0.7);
+            border-radius: 12px;
+            border-left: 5px solid #ffffff;
+        }
+
+        .result.active {
+            display: block;
+            animation: fadeInElement 0.5s ease-out forwards;
+        }
+
+        .result h3 {
+            color: #ffffff;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .thumbnail-container {
+            margin-bottom: 20px;
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .thumbnail-container img {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto 20px;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+
+        .carousel-wrapper {
+            display: flex;
+            transition: transform 0.3s ease;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            position: relative;
+        }
+
+        .carousel-slide img {
+            width: 100%;
+            display: block;
+            border-radius: 8px;
+        }
+
+        .carousel-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.3);
+            border: none;
+            color: white;
+            padding: 15px 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .carousel-nav:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .carousel-nav.prev {
+            left: 10px;
+        }
+
+        .carousel-nav.next {
+            right: 10px;
+        }
+
+        .carousel-indicator {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 8px;
+            z-index: 10;
+        }
+
+        .carousel-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+
+        .carousel-dot.active {
+            background: white;
+            width: 24px;
+            border-radius: 4px;
+        }
+
+        .download-all-btn {
+            position: absolute;
+            bottom: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.95);
+            color: #2d2d2d;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 11;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .download-all-btn:hover {
+            background: white;
+            transform: scale(1.05);
+        }
+
+        .result-info {
+            margin-bottom: 10px;
+            color: #b0b0b0;
+            line-height: 1.6;
+        }
+
+        .result-info strong {
+            color: #e0e0e0;
+        }
+
+        .download-options {
+            margin-top: 20px;
+        }
+
+        .download-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #ffffff;
+            color: #2d2d2d;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background: #f0f0f0;
+            transform: translateX(5px);
+        }
+
+        .error {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 8px;
+            border-left: 4px solid #f5c6cb;
+        }
+
+        .error.active {
+            display: block;
+            animation: fadeInElement 0.5s ease-out forwards;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 25px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .platform-badge {
+                font-size: 0.75em;
+                padding: 6px 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+            </svg>
+        </div>
+        
+        <h1>AIO Downloader</h1>
+        <p class="subtitle">Download video & audio dari berbagai platform</p>
+
+        <div class="supported-platforms">
+            <span class="platform-badge">YouTube</span>
+            <span class="platform-badge">Instagram</span>
+            <span class="platform-badge">TikTok</span>
+            <span class="platform-badge">Facebook</span>
+            <span class="platform-badge">Twitter</span>
+        </div>
+
+        <div class="input-group">
+            <label for="url">Masukkan URL Video/Audio</label>
+            <input type="text" id="url" placeholder="https://youtube.com/watch?v=..." />
+        </div>
+
+        <div class="btn-container">
+            <button id="downloadBtn">Download Sekarang</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Memproses link Anda...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="result" id="result">
+            <h3>Informasi Media</h3>
+            <div id="mediaPreview"></div>
+            <div class="result-info">
+                <strong>Judul:</strong> <span id="videoTitle"></span>
+            </div>
+            <div class="result-info">
+                <strong>Author:</strong> <span id="videoAuthor"></span>
+            </div>
+            <div class="result-info">
+                <strong>Durasi:</strong> <span id="videoDuration"></span>
+            </div>
+            <div class="download-options" id="downloadOptions"></div>
+        </div>
+    </div>
+
+    <script>
+        const downloadBtn = document.getElementById('downloadBtn');
+        const urlInput = document.getElementById('url');
+        const loading = document.getElementById('loading');
+        const result = document.getElementById('result');
+        const error = document.getElementById('error');
+
+        let currentSlide = 0;
+        let totalSlides = 0;
+        let imageUrls = [];
+
+        downloadBtn.addEventListener('click', async () => {
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                showError('Masukkan URL terlebih dahulu!');
+                return;
+            }
+
+            hideAll();
+            loading.classList.add('active');
+            downloadBtn.disabled = true;
+
+            try {
+                const response = await fetch('/api/aio', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Terjadi kesalahan');
+                }
+
+                displayResult(data);
+            } catch (err) {
+                showError(err.message || 'Gagal memproses URL. Pastikan URL valid!');
+            } finally {
+                loading.classList.remove('active');
+                downloadBtn.disabled = false;
+            }
+        });
+
+        function displayResult(data) {
+            document.getElementById('videoTitle').textContent = data.title;
+            document.getElementById('videoAuthor').textContent = data.author;
+            document.getElementById('videoDuration').textContent = data.duration > 0 ? data.duration + ' detik' : 'Image/Photo';
+
+            const mediaPreview = document.getElementById('mediaPreview');
+            const downloadOptions = document.getElementById('downloadOptions');
+            mediaPreview.innerHTML = '';
+            downloadOptions.innerHTML = '';
+
+            // Get images from medias
+            const images = data.medias ? data.medias.filter(m => m.type === 'image') : [];
+            const videos = data.medias ? data.medias.filter(m => m.type === 'video') : [];
+            const audios = data.medias ? data.medias.filter(m => m.type === 'audio') : [];
+
+            // Display carousel for multiple images or single thumbnail
+            if (images.length > 1) {
+                imageUrls = images.map(img => img.url);
+                totalSlides = images.length;
+                currentSlide = 0;
+
+                const carousel = document.createElement('div');
+                carousel.className = 'carousel-container';
+                carousel.innerHTML = `
+                    <div class="carousel-wrapper" id="carouselWrapper">
+                        ${images.map(img => `
+                            <div class="carousel-slide">
+                                <img src="${img.url}" alt="Image">
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button class="carousel-nav prev" onclick="prevSlide()">‹</button>
+                    <button class="carousel-nav next" onclick="nextSlide()">›</button>
+                    <div class="carousel-indicator">
+                        ${images.map((_, i) => `<div class="carousel-dot ${i === 0 ? 'active' : ''}" data-index="${i}"></div>`).join('')}
+                    </div>
+                    <button class="download-all-btn" onclick="downloadAllImages()">Download Semua (${images.length})</button>
+                `;
+                mediaPreview.appendChild(carousel);
+            } else if (images.length === 1 || data.thumbnail) {
+                const thumbnailUrl = images.length === 1 ? images[0].url : data.thumbnail;
+                const thumbnail = document.createElement('div');
+                thumbnail.className = 'thumbnail-container';
+                thumbnail.innerHTML = `<img src="${thumbnailUrl}" alt="Thumbnail">`;
+                mediaPreview.appendChild(thumbnail);
+            }
+
+            if (data.medias && data.medias.length > 0) {
+                // Display videos
+                if (videos.length > 0) {
+                    const videoHeader = document.createElement('div');
+                    videoHeader.style.cssText = 'color: #ffffff; font-weight: 600; margin: 15px 0 10px 0; font-size: 0.95em;';
+                    videoHeader.textContent = `Video (${videos.length})`;
+                    downloadOptions.appendChild(videoHeader);
+
+                    videos.forEach((media, index) => {
+                        const a = document.createElement('a');
+                        a.href = `/api/download?url=${encodeURIComponent(media.url)}&title=${encodeURIComponent(data.title)}&ext=${media.extension || 'mp4'}`;
+                        a.className = 'download-btn';
+                        a.textContent = `Download Video - ${media.quality || 'HD'}`;
+                        downloadOptions.appendChild(a);
+                    });
+                }
+
+                // Display single images (not carousel)
+                if (images.length === 1) {
+                    const imageHeader = document.createElement('div');
+                    imageHeader.style.cssText = 'color: #ffffff; font-weight: 600; margin: 15px 0 10px 0; font-size: 0.95em;';
+                    imageHeader.textContent = 'Gambar';
+                    downloadOptions.appendChild(imageHeader);
+
+                    const a = document.createElement('a');
+                    a.href = `/api/download?url=${encodeURIComponent(images[0].url)}&title=${encodeURIComponent(data.title)}&ext=${images[0].extension || 'jpg'}`;
+                    a.className = 'download-btn';
+                    a.textContent = `Download Gambar - ${images[0].quality || 'HD'}`;
+                    downloadOptions.appendChild(a);
+                }
+
+                // Display audios
+                if (audios.length > 0) {
+                    const audioHeader = document.createElement('div');
+                    audioHeader.style.cssText = 'color: #ffffff; font-weight: 600; margin: 15px 0 10px 0; font-size: 0.95em;';
+                    audioHeader.textContent = `Audio (${audios.length})`;
+                    downloadOptions.appendChild(audioHeader);
+
+                    audios.forEach((media, index) => {
+                        const a = document.createElement('a');
+                        a.href = `/api/download?url=${encodeURIComponent(media.url)}&title=${encodeURIComponent(data.title)}&ext=${media.extension || 'mp3'}`;
+                        a.className = 'download-btn';
+                        a.textContent = `Download Audio - ${media.quality || 'Original'}`;
+                        downloadOptions.appendChild(a);
+                    });
+                }
+            }
+
+            result.classList.add('active');
+        }
+
+        function prevSlide() {
+            if (currentSlide > 0) {
+                currentSlide--;
+            } else {
+                currentSlide = totalSlides - 1;
+            }
+            updateCarousel();
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides - 1) {
+                currentSlide++;
+            } else {
+                currentSlide = 0;
+            }
+            updateCarousel();
+        }
+
+        function updateCarousel() {
+            const wrapper = document.getElementById('carouselWrapper');
+            if (wrapper) {
+                wrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+                
+                // Update dots
+                document.querySelectorAll('.carousel-dot').forEach((dot, i) => {
+                    dot.classList.toggle('active', i === currentSlide);
+                });
+            }
+        }
+
+        function downloadAllImages() {
+            imageUrls.forEach((url, index) => {
+                const a = document.createElement('a');
+                a.href = `/api/download?url=${encodeURIComponent(url)}&title=image_${index + 1}&ext=jpg`;
+                a.download = `image_${index + 1}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+        }
+
+        function showError(message) {
+            error.textContent = message;
+            error.classList.add('active');
+        }
+
+        function hideAll() {
+            loading.classList.remove('active');
+            result.classList.remove('active');
+            error.classList.remove('active');
+        }
+
+        urlInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                downloadBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
