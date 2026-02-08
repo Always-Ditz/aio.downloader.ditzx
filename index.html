@@ -305,7 +305,7 @@
         </div>
         
         <h1>AIO Downloader</h1>
-        <p class="subtitle">Download video & audio dari berbagai platform</p>
+        <p class="subtitle">Download video, foto, & audio dari berbagai platform</p>
 
         <div class="supported-platforms">
             <span class="platform-badge">YouTube</span>
@@ -392,19 +392,64 @@
         function displayResult(data) {
             document.getElementById('videoTitle').textContent = data.title;
             document.getElementById('videoAuthor').textContent = data.author;
-            document.getElementById('videoDuration').textContent = data.duration;
+            document.getElementById('videoDuration').textContent = data.duration > 0 ? data.duration + ' detik' : 'Image/Photo';
 
             const downloadOptions = document.getElementById('downloadOptions');
             downloadOptions.innerHTML = '';
 
             if (data.medias && data.medias.length > 0) {
-                data.medias.forEach((media, index) => {
-                    const a = document.createElement('a');
-                    a.href = `/api/download?url=${encodeURIComponent(media.url)}&title=${encodeURIComponent(data.title)}`;
-                    a.className = 'download-btn';
-                    a.textContent = `Download ${media.quality || 'Option ' + (index + 1)}`;
-                    downloadOptions.appendChild(a);
-                });
+                // Group by type
+                const images = data.medias.filter(m => m.type === 'image');
+                const videos = data.medias.filter(m => m.type === 'video');
+                const audios = data.medias.filter(m => m.type === 'audio');
+
+                // Display images
+                if (images.length > 0) {
+                    const imageHeader = document.createElement('div');
+                    imageHeader.style.cssText = 'color: #ffffff; font-weight: 600; margin: 15px 0 10px 0; font-size: 0.95em;';
+                    imageHeader.textContent = `Gambar (${images.length})`;
+                    downloadOptions.appendChild(imageHeader);
+
+                    images.forEach((media, index) => {
+                        const a = document.createElement('a');
+                        a.href = `/api/download?url=${encodeURIComponent(media.url)}&title=${encodeURIComponent(data.title)}_img${index + 1}&ext=${media.extension || 'jpg'}`;
+                        a.className = 'download-btn';
+                        a.textContent = `Download Image ${index + 1} - ${media.quality || 'HD'}`;
+                        downloadOptions.appendChild(a);
+                    });
+                }
+
+                // Display videos
+                if (videos.length > 0) {
+                    const videoHeader = document.createElement('div');
+                    videoHeader.style.cssText = 'color: #ffffff; font-weight: 600; margin: 15px 0 10px 0; font-size: 0.95em;';
+                    videoHeader.textContent = `Video (${videos.length})`;
+                    downloadOptions.appendChild(videoHeader);
+
+                    videos.forEach((media, index) => {
+                        const a = document.createElement('a');
+                        a.href = `/api/download?url=${encodeURIComponent(media.url)}&title=${encodeURIComponent(data.title)}&ext=${media.extension || 'mp4'}`;
+                        a.className = 'download-btn';
+                        a.textContent = `Download Video - ${media.quality || 'HD'}`;
+                        downloadOptions.appendChild(a);
+                    });
+                }
+
+                // Display audios
+                if (audios.length > 0) {
+                    const audioHeader = document.createElement('div');
+                    audioHeader.style.cssText = 'color: #ffffff; font-weight: 600; margin: 15px 0 10px 0; font-size: 0.95em;';
+                    audioHeader.textContent = `Audio (${audios.length})`;
+                    downloadOptions.appendChild(audioHeader);
+
+                    audios.forEach((media, index) => {
+                        const a = document.createElement('a');
+                        a.href = `/api/download?url=${encodeURIComponent(media.url)}&title=${encodeURIComponent(data.title)}&ext=${media.extension || 'mp3'}`;
+                        a.className = 'download-btn';
+                        a.textContent = `Download Audio - ${media.quality || 'Original'}`;
+                        downloadOptions.appendChild(a);
+                    });
+                }
             }
 
             result.classList.add('active');
@@ -428,4 +473,4 @@
         });
     </script>
 </body>
-</html>
+    </html>
